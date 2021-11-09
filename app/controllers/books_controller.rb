@@ -8,9 +8,15 @@ class BooksController < ApplicationController
   end
 
   def index
-    # @books = Book.all
-    # @books = Book.includes(:favorited_books).sort {|a,b| b.favorited_books.size <=> a.favorited_book.size}
-    @books = Book.all.sort {|a,b| b.favorites.count <=> a.favorites.count}
+    # @books = Book.all　投稿したものを表示する。
+    # @books = Book.all.sort {|a,b| b.favorites.count <=> a.favorites.count} いいね数の順番に投稿を表示。
+    to  = Time.current.at_end_of_day
+    from  = (to - 1.day).at_beginning_of_day
+    @books = Book.includes(:favorited_users).
+      sort {|a,b| 
+        b.favorited_users.includes(:favorites).where(created_at: from...to).size <=> 
+        a.favorited_users.includes(:favorites).where(created_at: from...to).size
+      }
     @book = Book.new
   end
 
